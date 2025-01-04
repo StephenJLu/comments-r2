@@ -28,26 +28,19 @@ interface CloudflareContext {
   };
 }
 
-export const loader = async ({ context }: { context: CloudflareContext }) => {  // Add context parameter
+export const loader = async ({ context }: { context: CloudflareContext }) => {
   try {
     const response = await fetch('https://r2-worker.stephenjlu.com/comments.json', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'X-Custom-Auth-Key': context.cloudflare.env.AUTH_KEY_SECRET  // Use context instead of imported keys
+        'X-Custom-Auth-Key': context.cloudflare.env.AUTH_KEY_SECRET
       }
     });
     
-    if (!response.ok) {
-      console.error('Failed to fetch comments:', response.status);
-      return json<LoaderData>({ comments: [] });
-    }
-
-    const comments = await response.json();
-    return json<LoaderData>({ comments: Array.isArray(comments) ? comments : [] });
-    
+    const comments = await response.json() as Comment[];
+    return json<LoaderData>({ comments });
   } catch (error) {
-    console.error('Error fetching comments:', error);
     return json<LoaderData>({ comments: [] });
   }
 };
