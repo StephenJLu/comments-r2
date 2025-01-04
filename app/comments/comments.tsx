@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 import { Form, useActionData, useLoaderData, useNavigate } from '@remix-run/react';
 import { json } from '@remix-run/cloudflare';
-import keys from '../turnstile/keys.json';
 
 interface ActionData {
   success?: boolean;
@@ -21,26 +20,39 @@ interface LoaderData {
   comments: Comment[];
 }
 
-const AUTH_KEY_SECRET = keys.r2_auth_key;
+interface CloudflareContext {
+  cloudflare: {
+    env: {
+      AUTH_KEY_SECRET: string;
+    };
+  };
+}
 
-export const loader = async () => {
+export const loader = async ({ context }: { context: CloudflareContext }) => {  // Add context parameter
   try {
     const response = await fetch('https://r2-worker.stephenjlu.com/comments.json', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'X-Custom-Auth-Key': AUTH_KEY_SECRET
+        'X-Custom-Auth-Key': context.cloudflare.env.AUTH_KEY_SECRET  // Use context instead of imported keys
       }
     });
     
-    const comments = (await response.json()) as Comment[];
-    return json<LoaderData>({ comments });
+    if (!response.ok) {
+      console.error('Failed to fetch comments:', response.status);
+      return json<LoaderData>({ comments: [] });
+    }
+
+    const comments = await response.json();
+    return json<LoaderData>({ comments: Array.isArray(comments) ? comments : [] });
+    
   } catch (error) {
+    console.error('Error fetching comments:', error);
     return json<LoaderData>({ comments: [] });
   }
 };
 
-export const action = async ({ request }: { request: Request }) => {
+export const action = async ({ request, context }: { request: Request; context: CloudflareContext }) => {
   try {
     const formData = await request.formData();
     const name = formData.get('name') as string;
@@ -58,10 +70,10 @@ export const action = async ({ request }: { request: Request }) => {
 
     const response = await fetch('https://r2-worker.stephenjlu.com/comments.json', {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Custom-Auth-Key': AUTH_KEY_SECRET,
-      },
+       headers: {
+    'Content-Type': 'application/json',
+    'X-Custom-Auth-Key': context.cloudflare.env.AUTH_KEY_SECRET,
+  },
       body: JSON.stringify({ name, comment, timestamp: new Date().toISOString() }),
     });
 

@@ -53,7 +53,7 @@ export const Turnstile = ({ className, onWidgetId, success, theme, ...rest }: Tu
     };
     document.head.appendChild(script);
     return () => {     
-      document.head.removeChild(script);
+      //document.head.removeChild(script);
     };
   }, [onWidgetId, theme]);
 
