@@ -61,8 +61,31 @@ export const loader = async () => {
 };
 
 export const action = async ({ request, context }: { request: Request; context: CloudflareContext }) => {
+  const formData = await request.formData();
+  const intent = formData.get('intent');
+
+  // Handle delete
+  if (intent === 'delete') {
+    const timestamp = formData.get('timestamp') as string;
+    if (!timestamp) {
+      return json<ActionData>({ success: false, errors: { comment: 'Missing timestamp for deletion' } });
+    }
+
+    const response = await fetch('https://r2-worker.stephenjlu.com/comments.json', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Custom-Auth-Key': context.cloudflare.env.AUTH_KEY_SECRET,
+      },
+      body: JSON.stringify({ timestamp })
+    });
+
+    if (!response.ok) throw new Error('Failed to delete comment');
+    return json<ActionData>({ success: true });
+  }
+
+  // Existing comment creation logic
   try {
-    const formData = await request.formData();
     const name = formData.get('name') as string;
     const comment = formData.get('comment') as string;
 
@@ -199,9 +222,34 @@ export default function Comments() {
                   padding: '1rem',
                   borderRadius: '4px',
                   border: '1px solid #ccc',
-                  marginBottom: '1rem'
+                  marginBottom: '1rem',
+                  position: 'relative'
                 }}
               >
+                <Form method="post" style={{ position: 'absolute', top: '1rem', right: '1rem' }}>
+                  <input type="hidden" name="timestamp" value={comment.timestamp} />
+                  <button
+                    type="submit"
+                    name="intent"
+                    value="delete"
+                    style={{
+                      padding: '0.25rem 0.5rem',
+                      fontSize: '0.875rem',
+                      backgroundColor: '#dc2626',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                    }}
+                    onClick={(e) => {
+                      if (!confirm('Are you sure you want to delete this comment?')) {
+                        e.preventDefault();
+                      }
+                    }}
+                  >
+                    Delete
+                  </button>
+                </Form>
                 <strong>{comment.name}</strong>
                 <p style={{ margin: '0.5rem 0' }}>{comment.comment}</p>
                 <small style={{ color: '#666' }}>

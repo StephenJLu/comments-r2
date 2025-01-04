@@ -44,6 +44,17 @@ export default {
           return createResponse({ success: true });
         }
 
+        case "DELETE": {
+  const { timestamp } = await request.json();
+  const file = await bucket.get('comments.json');
+  const comments = file ? JSON.parse(await file.text()) : [];
+  
+  const updatedComments = comments.filter(comment => comment.timestamp !== timestamp);
+  await bucket.put('comments.json', JSON.stringify(updatedComments));
+  
+  return createResponse({ success: true });
+}
+
         default:
           return createResponse({ error: 'Method not allowed' }, 405);
       }
