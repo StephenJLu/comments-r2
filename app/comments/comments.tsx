@@ -30,17 +30,22 @@ interface CloudflareContext {
 
 export const loader = async ({ context }: { context: CloudflareContext }) => {
   try {
-    const response = await fetch('https://r2-worker.stephenjlu.com/comments.json', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Custom-Auth-Key': context.cloudflare.env.AUTH_KEY_SECRET
-      }
-    });
+    const response = await fetch('https://r2.stephenjlu.com/comments.json');
     
-    const comments = await response.json() as Comment[];
-    return json<LoaderData>({ comments });
+    if (!response.ok) {
+      console.error('Failed to fetch comments:', response.status);
+      return json<LoaderData>({ comments: [] });
+    }
+
+    const data = await response.json();
+    if (!Array.isArray(data)) {
+      console.error('Invalid response format');
+      return json<LoaderData>({ comments: [] });
+    }
+
+    return json<LoaderData>({ comments: data });
   } catch (error) {
+    console.error('Error fetching comments:', error);
     return json<LoaderData>({ comments: [] });
   }
 };
