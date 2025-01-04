@@ -1,7 +1,4 @@
-import { CommentsTest } from "./comments-test"
+import Comments, { action, loader } from "../comments/comments"
 
-export default function Index() {
-  return (
-    <CommentsTest />
-  );
-}
+export { Comments as default, loader, action }
+
