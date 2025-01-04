@@ -28,24 +28,34 @@ interface CloudflareContext {
   };
 }
 
-export const loader = async ({ context }: { context: CloudflareContext }) => {
+export const loader = async () => {
   try {
+    console.log('Fetching comments...');
     const response = await fetch('https://r2.stephenjlu.com/comments.json');
+    console.log('Response status:', response.status);
     
     if (!response.ok) {
-      console.error('Failed to fetch comments:', response.status);
+      console.error('Failed to fetch:', response.status);
       return json<LoaderData>({ comments: [] });
     }
 
-    const data = await response.json();
+    const text = await response.text();
+    console.log('Raw response:', text);
+
+    const data = JSON.parse(text);
+    console.log('Parsed data:', data);
+
     if (!Array.isArray(data)) {
-      console.error('Invalid response format');
+      console.error('Data is not an array');
       return json<LoaderData>({ comments: [] });
     }
 
-    return json<LoaderData>({ comments: data });
+    const validComments = data.filter(Boolean);
+    console.log('Valid comments:', validComments);
+
+    return json<LoaderData>({ comments: validComments });
   } catch (error) {
-    console.error('Error fetching comments:', error);
+    console.error('Loader error:', error);
     return json<LoaderData>({ comments: [] });
   }
 };
