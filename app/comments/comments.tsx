@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { Form, useActionData, useLoaderData, useNavigate } from '@remix-run/react';
 import { json } from '@remix-run/cloudflare';
+import paths from './paths.json';
 
 interface ActionData {
   success?: boolean;
@@ -28,10 +29,13 @@ interface CloudflareContext {
   };
 }
 
+const STORAGE_URL = paths.storage_url; // CHANGE TO YOUR R2 STORAGE URL IN PATHS.JSON
+const WORKER_URL =  paths.worker_url; // CHANGE TO YOUR R2 WORKER URL IN PATHS.JSON
+
 export const loader = async () => {
   try {
     console.log('Fetching comments...');
-    const response = await fetch('https://r2.stephenjlu.com/comments.json');
+    const response = await fetch(STORAGE_URL); 
     console.log('Response status:', response.status);
     
     if (!response.ok) {
@@ -71,7 +75,7 @@ export const action = async ({ request, context }: { request: Request; context: 
       return json<ActionData>({ success: false, errors: { comment: 'Missing timestamp for deletion' } });
     }
 
-    const response = await fetch('https://r2-worker.stephenjlu.com/comments.json', {
+    const response = await fetch(WORKER_URL, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -99,7 +103,7 @@ export const action = async ({ request, context }: { request: Request; context: 
       });
     }
 
-    const response = await fetch('https://r2-worker.stephenjlu.com/comments.json', {
+    const response = await fetch(WORKER_URL, {
       method: 'PUT',
        headers: {
     'Content-Type': 'application/json',
