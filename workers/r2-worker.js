@@ -11,7 +11,7 @@ const createResponse = (data, status = 200) => new Response(
 );
 
 const hasValidHeader = (request, env) => 
-  request.headers.get("X-Custom-Auth-Key") === env.AUTH_KEY_SECRET;
+  request.headers.get("X-Custom-Auth-Key") === env.AUTH_KEY_SECRET; // REMEMBER TO SET ENVIRONMENT VARIABLE IN WRANGLER/CLOUDFLARE DASHBOARD
 
 export default {
   async fetch(request, env) {       
@@ -24,7 +24,7 @@ export default {
     }
 
     try {
-      const bucket = env.R2_BUCKET;
+      const bucket = env.R2_BUCKET; // CHANGE TO YOUR BUCKET BINDING VARIABLE
       
       switch (request.method) {
         case "GET": {
