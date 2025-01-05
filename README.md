@@ -1,7 +1,7 @@
 # Using Cloudflare R2 Object Storage to Serve a Comments Field
 - 📖 [Full Documentation](https://docs.stephenjlu.com/docs-stephenjlu/projects/using-cloudflare-r2-object-storage-to-serve-a-comments-field)
 - ⚡ [Live Test Demo](https://comments.stephenjlu.com/)
-- 📝 [Blog Post]()
+- 📝 [Blog Post](https://ledger.stephenjlu.com/how-i-made-a-comments-field-with-cloudflare-r2-object-storage)
 
 
 ## Development
