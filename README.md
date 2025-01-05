@@ -1,7 +1,8 @@
-# Welcome to Remix + Cloudflare!
+# Using Cloudflare R2 Object Storage to Serve a Comments Field
+- 📖 [Full Documentation](https://docs.stephenjlu.com/docs-stephenjlu/projects/using-cloudflare-r2-object-storage-to-serve-a-comments-field)
+- ⚡ [Live Test Demo](https://comments.stephenjlu.com/)
+- 📝 [Blog Post]()
 
-- 📖 [Remix docs](https://remix.run/docs)
-- 📖 [Remix Cloudflare docs](https://remix.run/guides/vite#cloudflare)
 
 ## Development
 
