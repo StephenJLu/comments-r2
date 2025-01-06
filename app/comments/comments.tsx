@@ -29,13 +29,19 @@ interface CloudflareContext {
   };
 }
 
-const STORAGE_URL = paths.storage_url; // CHANGE TO YOUR R2 STORAGE URL IN PATHS.JSON
 const WORKER_URL =  paths.worker_url; // CHANGE TO YOUR R2 WORKER URL IN PATHS.JSON
 
-export const loader = async () => {
+export const loader = async ({ context }: { context: CloudflareContext }) => {
   try {
-    console.log('Fetching comments...');
-    const response = await fetch(STORAGE_URL); 
+    console.log('Fetching comments from worker...');
+    const response = await fetch(WORKER_URL, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Custom-Auth-Key': context.cloudflare.env.AUTH_KEY_SECRET,
+      }
+    });
+    
     console.log('Response status:', response.status);
     
     if (!response.ok) {
@@ -43,10 +49,7 @@ export const loader = async () => {
       return json<LoaderData>({ comments: [] });
     }
 
-    const text = await response.text();
-    console.log('Raw response:', text);
-
-    const data = JSON.parse(text);
+    const data = await response.json();
     console.log('Parsed data:', data);
 
     if (!Array.isArray(data)) {
